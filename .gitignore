@@ -1,0 +1,24 @@
+# Node.js
+node_modules/
+dist/
+build/
+
+# Environment variables
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# AI models
+*.h5
+*.keras
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
