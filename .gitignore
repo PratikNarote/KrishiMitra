@@ -22,3 +22,14 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Dataset
+dataset/
+
+# AI Models
+ai-model/models/
+
+# Python
+**/__pycache__/
+*.pyc
+.venv/
