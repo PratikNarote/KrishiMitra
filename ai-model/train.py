@@ -1,29 +1,46 @@
 import os
 
-# Hide most TensorFlow logs
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import tensorflow as tf
+
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout
-from tensorflow.keras.models import Model
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
-# ==========================
-# Dataset Configuration
-# ==========================
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+
+from tensorflow.keras.models import Model
+
+from tensorflow.keras.callbacks import (
+    EarlyStopping,
+    ModelCheckpoint,
+    ReduceLROnPlateau
+)
+
+from tensorflow.keras.optimizers import Adam
+
+# ==========================================
+# CONFIG
+# ==========================================
+
 DATASET_PATH = "../dataset/PlantVillage"
 
 IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
-EPOCHS = 5
 
-# ==========================
-# Image Preprocessing
-# ==========================
+BATCH_SIZE = 32
+
+INITIAL_EPOCHS = 5
+FINE_TUNE_EPOCHS = 10
+
+# ==========================================
+# DATA GENERATORS
+# ==========================================
+
 train_datagen = ImageDataGenerator(
-    rescale=1.0 / 255,
+    preprocessing_function=preprocess_input,
     validation_split=0.2,
     rotation_range=20,
     zoom_range=0.2,
@@ -46,23 +63,62 @@ validation_generator = train_datagen.flow_from_directory(
     subset="validation"
 )
 
-# ==========================
-# Build MobileNetV2 Model
-# ==========================
+print("\nClasses:")
+print(train_generator.class_indices)
+
+# ==========================================
+# CALLBACKS
+# ==========================================
+
+os.makedirs("models", exist_ok=True)
+
+checkpoint = ModelCheckpoint(
+    "models/best_model.keras",
+    monitor="val_accuracy",
+    save_best_only=True,
+    verbose=1
+)
+
+early_stopping = EarlyStopping(
+    monitor="val_loss",
+    patience=3,
+    restore_best_weights=True
+)
+
+reduce_lr = ReduceLROnPlateau(
+    monitor="val_loss",
+    factor=0.2,
+    patience=2,
+    verbose=1
+)
+
+# ==========================================
+# BASE MODEL
+# ==========================================
+
 base_model = MobileNetV2(
     weights="imagenet",
     include_top=False,
     input_shape=(224, 224, 3)
 )
 
-# Freeze pretrained layers
 base_model.trainable = False
 
-# Custom Classification Head
+# ==========================================
+# CUSTOM HEAD
+# ==========================================
+
 x = base_model.output
+
 x = GlobalAveragePooling2D()(x)
+
 x = Dropout(0.3)(x)
-x = Dense(128, activation="relu")(x)
+
+x = Dense(
+    128,
+    activation="relu"
+)(x)
+
 x = Dropout(0.2)(x)
 
 predictions = Dense(
@@ -75,53 +131,66 @@ model = Model(
     outputs=predictions
 )
 
-# ==========================
-# Compile Model
-# ==========================
+# ==========================================
+# PHASE 1 TRAINING
+# ==========================================
+
 model.compile(
     optimizer="adam",
     loss="categorical_crossentropy",
     metrics=["accuracy"]
 )
 
-# Display model summary
-model.summary()
+print("\nStarting Initial Training...\n")
 
-# ==========================
-# Create models folder
-# ==========================
-os.makedirs("models", exist_ok=True)
-
-# ==========================
-# Callbacks
-# ==========================
-early_stopping = EarlyStopping(
-    monitor="val_loss",
-    patience=3,
-    restore_best_weights=True
-)
-
-checkpoint = ModelCheckpoint(
-    filepath="models/best_model.keras",
-    monitor="val_accuracy",
-    save_best_only=True,
-    verbose=1
-)
-
-# ==========================
-# Train Model
-# ==========================
 history = model.fit(
     train_generator,
     validation_data=validation_generator,
-    epochs=EPOCHS,
-    callbacks=[early_stopping, checkpoint]
+    epochs=INITIAL_EPOCHS,
+    callbacks=[
+        checkpoint,
+        early_stopping,
+        reduce_lr
+    ]
 )
 
-# ==========================
-# Save Final Model
-# ==========================
-model.save("models/crop_disease_model.keras")
+# ==========================================
+# PHASE 2 FINE TUNING
+# ==========================================
+
+print("\nStarting Fine-Tuning...\n")
+
+base_model.trainable = True
+
+for layer in base_model.layers[:-30]:
+    layer.trainable = False
+
+model.compile(
+    optimizer=Adam(
+        learning_rate=1e-5
+    ),
+    loss="categorical_crossentropy",
+    metrics=["accuracy"]
+)
+
+history_fine = model.fit(
+    train_generator,
+    validation_data=validation_generator,
+    epochs=FINE_TUNE_EPOCHS,
+    callbacks=[
+        checkpoint,
+        early_stopping,
+        reduce_lr
+    ]
+)
+
+# ==========================================
+# SAVE FINAL MODEL
+# ==========================================
+
+model.save(
+    "models/crop_disease_model.keras"
+)
 
 print("\n====================================")
 print("✅ Training Completed Successfully!")

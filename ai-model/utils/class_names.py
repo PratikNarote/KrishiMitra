@@ -1,0 +1,17 @@
+CLASS_NAMES = [
+    "Pepper Bell - Bacterial Spot",
+    "Pepper Bell - Healthy",
+    "Potato - Early Blight",
+    "Potato - Late Blight",
+    "Potato - Healthy",
+    "Tomato - Bacterial Spot",
+    "Tomato - Early Blight",
+    "Tomato - Late Blight",
+    "Tomato - Leaf Mold",
+    "Tomato - Septoria Leaf Spot",
+    "Tomato - Spider Mites",
+    "Tomato - Target Spot",
+    "Tomato - Yellow Leaf Curl Virus",
+    "Tomato - Mosaic Virus",
+    "Tomato - Healthy"
+]
