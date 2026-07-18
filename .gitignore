@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+
+# AI Models
+ai-model/models/
+
+# Dataset
+dataset/
+
+# Uploads
+ai-model/uploads/
+
+# Environment Variables
+.env
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# OS Files
+.DS_Store
+Thumbs.db
