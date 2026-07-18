@@ -1,130 +1,55 @@
-# 🌿 KrishiMitra AI
+# 🌾 KrishiMitra
 
-An AI-powered Crop Disease Detection System that helps farmers identify plant diseases from leaf images using Deep Learning.
+AI-powered Crop Disease Detection and Smart Farming Assistant.
 
-## 🚀 Features
+## Features
 
-- 🌱 Crop Disease Detection using TensorFlow
-- 🤖 MobileNetV2 Deep Learning Model
-- ⚡ FastAPI Backend
-- 🎨 React Frontend
-- 📷 Image Upload
-- 📊 Disease Prediction with Confidence Score
-- 💊 Treatment Suggestions
-- 🛡️ Prevention Tips
-
----
+- 🌿 Crop disease detection using Deep Learning
+- 🤖 TensorFlow/Keras AI model
+- 🚀 FastAPI backend
+- ⚛️ React frontend
+- 📷 Upload crop leaf images for prediction
+- 📊 Confidence score for predictions
 
 ## Tech Stack
 
-### Frontend
-- React.js
-- HTML
-- CSS
-- JavaScript
-
-### Backend
-- FastAPI
 - Python
-
-### AI/ML
 - TensorFlow
-- Keras
-- NumPy
-- Pillow
-
----
-
-## Dataset
-
-PlantVillage Dataset
-
-Classes:
-- Pepper
-- Potato
-- Tomato
-
-Total Classes: **15**
-
----
+- FastAPI
+- React
+- Vite
+- JavaScript
 
 ## Project Structure
 
 ```
-KrishiMitra
+KrishiMitra/
 │
-├── ai-model
-│   ├── app.py
-│   ├── predict.py
-│   ├── train.py
-│   ├── requirements.txt
-│   └── utils
-│
-├── backend
-│
-├── frontend
-│
-├── docs
-│
+├── ai-model/
+├── backend/
+├── frontend/
+├── dataset/
 └── README.md
 ```
-
----
 
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/KrishiMitra.git
+git clone https://github.com/PratikNarote/KrishiMitra.git
+```
 
-cd KrishiMitra
+Install dependencies:
 
-python -m venv .venv
-
+```bash
 pip install -r ai-model/requirements.txt
 ```
 
----
-
-## Run FastAPI
+Run backend:
 
 ```bash
-cd ai-model
-
 uvicorn app:app --reload
 ```
 
-Open:
-
-```
-http://127.0.0.1:8000/docs
-```
-
----
-
-## Model Performance
-
-| Metric | Value |
-|---------|-------|
-| Validation Accuracy | 91.68% |
-| Classes | 15 |
-| Architecture | MobileNetV2 |
-
----
-
-## Future Improvements
-
-- Weather Forecast
-- Fertilizer Recommendation
-- Voice Assistant
-- Multilingual Support
-- Farmer Dashboard
-
----
-
 ## Author
 
-**Pratik Gajanand Narote**
-
-B.Tech Computer Science Engineering (AI)
-
-GH Raisoni College of Engineering & Management, Pune
+Pratik Narote
