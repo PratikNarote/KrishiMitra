@@ -1,5 +1,17 @@
 # 🌾 KrishiMitra AI
 
+## 📸 Application Screenshots
+
+### 🏠 Home Page
+
+![Home Page](docs/images/home.png)
+
+---
+
+### 🤖 Prediction Result
+
+![Prediction Result](docs/images/prediction.png)
+
 An AI-powered crop disease detection system that helps identify diseases in tomato, potato, and pepper plants using Deep Learning. The application allows users to upload a leaf image and instantly receive the predicted disease, confidence score, disease description, and treatment recommendations.
 
 ---
