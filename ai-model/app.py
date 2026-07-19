@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing import image
@@ -26,14 +27,19 @@ model = tf.keras.models.load_model("models/best_model.keras")
 
 print("✅ AI Model Loaded Successfully!")
 
+
+
 app = FastAPI(
     title="KrishiMitra AI API",
     version="1.0"
 )
 
-app = FastAPI(
-    title="KrishiMitra AI API",
-    version="1.0"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")

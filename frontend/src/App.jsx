@@ -1,122 +1,127 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import api from "../services/api";
+import diseaseInfo from "./data/diseaseInfo";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [disease, setDisease] = useState("");
+  const [confidence, setConfidence] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(null);
+
+  const handlePredict = async () => {
+    if (!selectedFile) {
+      alert("Please select an image.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      setLoading(true);
+
+      const response = await api.post("/predict", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setDisease(response.data.disease);
+      setConfidence(response.data.confidence);
+    } catch (error) {
+      alert("Prediction failed.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+      const info = disease ? diseaseInfo[disease] : null;
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="container">
 
-      <div className="ticks"></div>
+      <h1>🌾 KrishiMitra</h1>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <h2>AI Crop Disease Detection</h2>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <input
+         type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+  }}
+
+       />
+       
+       {preview && (
+  <div className="preview">
+    <img src={preview} alt="Leaf Preview" />
+  </div>
+)}
+
+
+
+      <button onClick={handlePredict}>
+        Analyze Crop
+      </button>
+
+      <br /><br />
+
+      {loading && <h3>Predicting...</h3>}
+
+      {disease && (
+  <div className="result">
+    <h2>🌿 Prediction Result</h2>
+
+    <h3>Disease</h3>
+    <p>{disease}</p>
+
+   <h3>Confidence</h3>
+
+<div className="progress">
+  <div
+    className="progress-fill"
+    style={{ width: `${confidence}%` }}
+  ></div>
+</div>
+
+<p>{confidence}%</p>
+
+<p className="badge">
+  {confidence >= 90
+    ? "🟢 Very High Confidence"
+    : confidence >= 75
+    ? "🟡 High Confidence"
+    : "🔴 Low Confidence"}
+</p>
+
+
+    {info && (
+      <>
+        <h3>Description</h3>
+        <p>{info.description}</p>
+
+        <h3>Recommended Treatment</h3>
+
+        <ul className="treatment-list">
+          {info.treatment.map((item, index) => (
+            <li key={index}>✅ {item}</li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+)}
+
+    </div>
+  );
 }
 
-export default App
+export default App;
