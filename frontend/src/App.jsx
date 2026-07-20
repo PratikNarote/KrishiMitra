@@ -1,6 +1,8 @@
 import { useState } from "react";
-import api from "../services/api";
+import api from "./services/api";
 import diseaseInfo from "./data/diseaseInfo";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 import "./App.css";
 
 function App() {
@@ -40,37 +42,46 @@ function App() {
       const info = disease ? diseaseInfo[disease] : null;
 
   return (
+<>
+  <Navbar /> 
+
+
+
     <div className="container">
 
-      <h1>🌾 KrishiMitra</h1>
+      <Hero />
 
-      <h2>AI Crop Disease Detection</h2>
+      {/* File Upload */}
 
-      <input
-         type="file"
-  accept="image/*"
-  onChange={(e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
+      <div className="upload-card">
 
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    }
-  }}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      setSelectedFile(file);
 
-       />
-       
-       {preview && (
-  <div className="preview">
-    <img src={preview} alt="Leaf Preview" />
-  </div>
-)}
+      if (file) {
+        setPreview(URL.createObjectURL(file));
+      }
+    }}
+  />
 
+  {preview && (
+    <div className="preview">
+      <img src={preview} alt="Leaf Preview" />
+    </div>
+  )}
 
+  <button
+    className="predict-btn"
+    onClick={handlePredict}
+  >
+    🔍 Analyze Crop
+  </button>
 
-      <button onClick={handlePredict}>
-        Analyze Crop
-      </button>
+</div>
 
       <br /><br />
 
@@ -121,6 +132,7 @@ function App() {
 )}
 
     </div>
+    </>
   );
 }
 
