@@ -3,6 +3,8 @@ import api from "./services/api";
 import diseaseInfo from "./data/diseaseInfo";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import WeatherCard from "./components/WeatherCard";
+import advisoryData from "./data/advisory";
 import "./App.css";
 
 function App() {
@@ -40,6 +42,7 @@ function App() {
     }
   };
       const info = disease ? diseaseInfo[disease] : null;
+      const advisory = disease ? advisoryData[disease] : null;
 
   return (
 <>
@@ -50,6 +53,9 @@ function App() {
     <div className="container">
 
       <Hero />
+
+       <WeatherCard />
+           {/* Upload Card */}
 
       {/* File Upload */}
 
@@ -126,8 +132,24 @@ function App() {
             <li key={index}>✅ {item}</li>
           ))}
         </ul>
-      </>
-    )}
+
+{/* AI Farming Advisory */}
+{advisory && (
+  <>
+    <h3>🌾 AI Farming Advisory</h3>
+
+    <ul className="treatment-list">
+      {advisory.advice.map((item, index) => (
+        <li key={index}>🌱 {item}</li>
+      ))}
+    </ul>
+  </>
+)}
+
+</>
+)}
+
+    
   </div>
 )}
 
