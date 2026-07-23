@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getWeatherByCoords, getLocationName } from "../services/weather";
 
-function WeatherCard() {
+function WeatherCard({ onWeatherUpdate }) {
   const [weather, setWeather] = useState(null);
   const [location, setLocation] = useState("");
 
@@ -29,6 +29,7 @@ function WeatherCard() {
     locationData.address.city;
 
   setLocation(area);
+  onWeatherUpdate(weatherData, area);
 
 } catch (err) {
   console.error(err);

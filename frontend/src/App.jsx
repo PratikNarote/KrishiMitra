@@ -5,6 +5,10 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import WeatherCard from "./components/WeatherCard";
 import advisoryData from "./data/advisory";
+import generateReport from "./utils/generateReport";
+import ConfidenceMeter from "./components/ConfidenceMeter";
+import getWeatherAdvice from "./utils/weatherAdvice";
+
 import "./App.css";
 
 function App() {
@@ -13,6 +17,8 @@ function App() {
   const [confidence, setConfidence] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [weather, setWeather] = useState(null);
+const [location, setLocation] = useState("");
 
   const handlePredict = async () => {
     if (!selectedFile) {
@@ -44,6 +50,31 @@ function App() {
       const info = disease ? diseaseInfo[disease] : null;
       const advisory = disease ? advisoryData[disease] : null;
 
+      const handleDownloadReport = () => {
+  if (!disease || !weather || !info || !advisory) {
+    alert("No prediction available.");
+    return;
+  }
+
+  generateReport(
+  disease,
+  confidence,
+  weather,
+  info,
+  advisory,
+  weatherAdvice,
+  location
+);
+};
+
+const handleWeatherUpdate = (weatherData, locationName) => {
+  setWeather(weatherData);
+  setLocation(locationName);
+};
+
+const weatherAdvice = getWeatherAdvice(weather);
+
+console.log(weatherAdvice);
   return (
 <>
   <Navbar /> 
@@ -54,7 +85,7 @@ function App() {
 
       <Hero />
 
-       <WeatherCard />
+      <WeatherCard onWeatherUpdate={handleWeatherUpdate} />
            {/* Upload Card */}
 
       {/* File Upload */}
@@ -102,14 +133,7 @@ function App() {
 
    <h3>Confidence</h3>
 
-<div className="progress">
-  <div
-    className="progress-fill"
-    style={{ width: `${confidence}%` }}
-  ></div>
-</div>
-
-<p>{confidence}%</p>
+<ConfidenceMeter confidence={Number(confidence)} />
 
 <p className="badge">
   {confidence >= 90
@@ -149,6 +173,24 @@ function App() {
 </>
 )}
 
+{weatherAdvice.length > 0 && (
+  <>
+    <h3>🌦 Weather Based AI Recommendation</h3>
+
+    <ul className="treatment-list">
+      {weatherAdvice.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  </>
+)}
+
+<button
+  className="download-btn"
+  onClick={handleDownloadReport}
+>
+  📄 Download AI Report
+</button>
     
   </div>
 )}

@@ -256,3 +256,21 @@ box-shadow:0 4px 12px rgba(0,0,0,.2);
     font-size:18px;
     color:#444;
 }
+
+.download-btn{
+    margin-top:25px;
+    padding:14px 28px;
+    border:none;
+    border-radius:12px;
+    background:#2e7d32;
+    color:white;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.download-btn:hover{
+    background:#1b5e20;
+    transform:translateY(-2px);
+}
