@@ -4,6 +4,8 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing import image
 from PIL import Image
+from chatbot import ask_gemini
+from pydantic import BaseModel
 import io
 CLASS_NAMES = [
     "Pepper Bell - Bacterial Spot",
@@ -42,6 +44,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ChatRequest(BaseModel):
+    question: str
+    disease: str
+    weather: dict
+    location: str
+    advisory: list
+
 @app.get("/")
 def home():
     return {
@@ -72,4 +81,19 @@ async def predict(file: UploadFile = File(...)):
     return {
         "disease": CLASS_NAMES[predicted_index],
         "confidence": round(confidence, 2)
+    }
+
+@app.post("/chat")
+def chat(request: ChatRequest):
+
+    answer = ask_gemini(
+        request.question,
+        request.disease,
+        request.weather,
+        request.location,
+        request.advisory
+    )
+
+    return {
+        "answer": answer
     }

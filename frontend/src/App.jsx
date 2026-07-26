@@ -8,6 +8,7 @@ import advisoryData from "./data/advisory";
 import generateReport from "./utils/generateReport";
 import ConfidenceMeter from "./components/ConfidenceMeter";
 import getWeatherAdvice from "./utils/weatherAdvice";
+import ChatBot from "./components/ChatBot";
 
 import "./App.css";
 
@@ -196,6 +197,13 @@ console.log(weatherAdvice);
 )}
 
     </div>
+
+<ChatBot
+  disease={disease}
+  weather={weather}
+  advisory={advisory}
+/>
+
     </>
   );
 }
