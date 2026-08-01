@@ -20,6 +20,7 @@ function App() {
   const [preview, setPreview] = useState(null);
   const [weather, setWeather] = useState(null);
 const [location, setLocation] = useState("");
+const [top3, setTop3] = useState([]);
 
   const handlePredict = async () => {
     if (!selectedFile) {
@@ -41,6 +42,7 @@ const [location, setLocation] = useState("");
 
       setDisease(response.data.disease);
       setConfidence(response.data.confidence);
+      setTop3(response.data.top3);
     } catch (error) {
       alert("Prediction failed.");
       console.error(error);
@@ -143,6 +145,22 @@ console.log(weatherAdvice);
     ? "🟡 High Confidence"
     : "🔴 Low Confidence"}
 </p>
+
+{top3.length > 0 && (
+  <>
+    <h3>🏆 Top 3 Predictions</h3>
+
+    <div className="top3-card">
+      {top3.map((item, index) => (
+        <div key={index} className="top3-item">
+          <strong>{index + 1}. {item.disease}</strong>
+          <br />
+          Confidence: {item.confidence}%
+        </div>
+      ))}
+    </div>
+  </>
+)}
 
 
     {info && (
