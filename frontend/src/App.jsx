@@ -9,6 +9,7 @@ import generateReport from "./utils/generateReport";
 import ConfidenceMeter from "./components/ConfidenceMeter";
 import getWeatherAdvice from "./utils/weatherAdvice";
 import ChatBot from "./components/ChatBot";
+import History from "./components/History";
 
 import "./App.css";
 
@@ -21,6 +22,7 @@ function App() {
   const [weather, setWeather] = useState(null);
 const [location, setLocation] = useState("");
 const [top3, setTop3] = useState([]);
+const [refreshHistory, setRefreshHistory] = useState(false);
 
   const handlePredict = async () => {
     if (!selectedFile) {
@@ -43,6 +45,7 @@ const [top3, setTop3] = useState([]);
       setDisease(response.data.disease);
       setConfidence(response.data.confidence);
       setTop3(response.data.top3);
+      setRefreshHistory(prev => !prev);
     } catch (error) {
       alert("Prediction failed.");
       console.error(error);
@@ -221,7 +224,7 @@ console.log(weatherAdvice);
   weather={weather}
   advisory={advisory}
 />
-
+<History refresh={refreshHistory} />
     </>
   );
 }

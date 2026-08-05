@@ -8,6 +8,7 @@ from chatbot import ask_gemini
 from pydantic import BaseModel
 from database import predictions
 from datetime import datetime
+from bson import ObjectId
 import io
 CLASS_NAMES = [
     "Pepper Bell - Bacterial Spot",
@@ -112,6 +113,64 @@ async def predict(file: UploadFile = File(...)):
         "disease": disease,
         "confidence": round(confidence, 2),
         "top3": top3_predictions
+    }
+
+
+
+@app.get("/history")
+def get_history():
+    try:
+        data = []
+
+        for item in predictions.find().sort("timestamp", -1):
+            data.append({
+                "_id": str(item["_id"]),
+                "disease": item["disease"],
+                "confidence": item["confidence"],
+                "timestamp": item["timestamp"]
+            })
+
+        return {
+            "success": True,
+            "count": len(data),
+            "predictions": data
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+@app.delete("/history")
+def delete_history():
+    try:
+        result = predictions.delete_many({})
+
+        return {
+            "success": True,
+            "message": f"{result.deleted_count} records deleted."
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+@app.delete("/history/{id}")
+def delete_prediction(id: str):
+    result = predictions.delete_one({"_id": ObjectId(id)})
+
+    if result.deleted_count == 1:
+        return {
+            "success": True,
+            "message": "Prediction deleted successfully."
+        }
+
+    return {
+        "success": False,
+        "message": "Prediction not found."
     }
 
 @app.post("/chat")
