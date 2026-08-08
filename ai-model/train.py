@@ -62,6 +62,13 @@ train_generator = train_datagen.flow_from_directory(
 
     subset="training"
 )
+
+print("\n========== CLASS MAPPING ==========")
+
+for class_name, index in train_generator.class_indices.items():
+    print(index, "->", class_name)
+
+print("===================================\n")
 # ===========================
 # Validation Dataset
 # ===========================

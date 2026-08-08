@@ -1,30 +1,34 @@
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-
 function ConfidenceMeter({ confidence }) {
+  const value = Number(confidence);
+
+  let color;
+  let message;
+
+  if (value >= 80) {
+    color = "green";
+    message = "Very High Confidence";
+  } else if (value >= 50) {
+    color = "orange";
+    message = "Medium Confidence";
+  } else {
+    color = "red";
+    message = "Low Confidence";
+  }
+
   return (
-    <div
-      style={{
-        width: 180,
-        height: 180,
-        margin: "20px auto",
-      }}
-    >
-      <CircularProgressbar
-        value={confidence}
-        text={`${confidence}%`}
-        styles={buildStyles({
-          textSize: "14px",
-          pathColor:
-            confidence >= 90
-              ? "#2e7d32"
-              : confidence >= 75
-              ? "#f9a825"
-              : "#d32f2f",
-          textColor: "#222",
-          trailColor: "#eee",
-        })}
-      />
+    <div className="confidence-meter">
+      <div>
+        <strong>{value.toFixed(2)}%</strong>
+
+        <span
+          className="confidence-dot"
+          style={{
+            backgroundColor: color,
+          }}
+        ></span>
+
+        <strong>{message}</strong>
+      </div>
     </div>
   );
 }

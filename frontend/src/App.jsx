@@ -1,28 +1,63 @@
 import { useState } from "react";
 import api from "./services/api";
+
 import diseaseInfo from "./data/diseaseInfo";
+import advisoryData from "./data/advisory";
+
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import WeatherCard from "./components/WeatherCard";
-import advisoryData from "./data/advisory";
-import generateReport from "./utils/generateReport";
 import ConfidenceMeter from "./components/ConfidenceMeter";
-import getWeatherAdvice from "./utils/weatherAdvice";
 import ChatBot from "./components/ChatBot";
 import History from "./components/History";
+
+import generateReport from "./utils/generateReport";
+import getWeatherAdvice from "./utils/weatherAdvice";
 
 import "./App.css";
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
+
   const [disease, setDisease] = useState("");
   const [confidence, setConfidence] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   const [preview, setPreview] = useState(null);
+
   const [weather, setWeather] = useState(null);
-const [location, setLocation] = useState("");
-const [top3, setTop3] = useState([]);
-const [refreshHistory, setRefreshHistory] = useState(false);
+  const [location, setLocation] = useState("");
+
+  const [top3, setTop3] = useState([]);
+
+  const [refreshHistory, setRefreshHistory] = useState(false);
+
+  // =====================================================
+  // WEATHER ADVICE
+  // =====================================================
+
+  const weatherAdvice = getWeatherAdvice(weather);
+
+  // =====================================================
+  // DISEASE INFORMATION
+  // =====================================================
+
+  const info = disease
+    ? diseaseInfo[disease]
+    : null;
+
+  // =====================================================
+  // FARMING ADVISORY
+  // =====================================================
+
+  const advisory = disease
+    ? advisoryData[disease]
+    : null;
+
+  // =====================================================
+  // PREDICT CROP DISEASE
+  // =====================================================
 
   const handlePredict = async () => {
     if (!selectedFile) {
@@ -31,200 +66,510 @@ const [refreshHistory, setRefreshHistory] = useState(false);
     }
 
     const formData = new FormData();
+
     formData.append("file", selectedFile);
 
     try {
       setLoading(true);
 
-      const response = await api.post("/predict", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post(
+        "/predict",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-      setDisease(response.data.disease);
-      setConfidence(response.data.confidence);
-      setTop3(response.data.top3);
-      setRefreshHistory(prev => !prev);
+      console.log(
+        "Prediction Response:",
+        response.data
+      );
+
+      // Main prediction
+      setDisease(response.data.disease || "");
+
+      setConfidence(
+        response.data.confidence || 0
+      );
+
+      // Top 3 predictions
+      setTop3(
+        response.data.top3 || []
+      );
+
+      // Refresh history
+      setRefreshHistory(
+        (prev) => !prev
+      );
+
     } catch (error) {
-      alert("Prediction failed.");
-      console.error(error);
+      console.error(
+        "Prediction error:",
+        error
+      );
+
+      alert(
+        "Prediction failed. Please try again."
+      );
+
     } finally {
       setLoading(false);
     }
   };
-      const info = disease ? diseaseInfo[disease] : null;
-      const advisory = disease ? advisoryData[disease] : null;
 
-      const handleDownloadReport = () => {
-  if (!disease || !weather || !info || !advisory) {
-    alert("No prediction available.");
-    return;
-  }
+  // =====================================================
+  // WEATHER UPDATE
+  // =====================================================
 
-  generateReport(
+  const handleWeatherUpdate = (
+    weatherData,
+    locationName
+  ) => {
+    console.log(
+      "Weather:",
+      weatherData
+    );
+
+    console.log(
+      "Location:",
+      locationName
+    );
+
+    setWeather(weatherData);
+
+    setLocation(locationName);
+  };
+
+  // =====================================================
+  // DOWNLOAD AI REPORT
+  // =====================================================
+
+  const handleDownloadReport = () => {
+
+    if (!disease) {
+      alert(
+        "Please analyze a crop first."
+      );
+      return;
+    }
+
+    if (!weather) {
+      alert(
+        "Weather information is not available yet. Please wait for the weather to load."
+      );
+      return;
+    }
+
+    if (!info) {
+      alert(
+        `Disease information is missing for: ${disease}`
+      );
+
+      console.error(
+        "Missing diseaseInfo for:",
+        disease
+      );
+
+      return;
+    }
+
+    if (!advisory) {
+      alert(
+        `Farming advisory is missing for: ${disease}`
+      );
+
+      console.error(
+        "Missing advisoryData for:",
+        disease
+      );
+
+      return;
+    }
+
+    try {
+generateReport(
   disease,
   confidence,
   weather,
   info,
   advisory,
   weatherAdvice,
-  location
+  location,
+  top3
 );
-};
 
-const handleWeatherUpdate = (weatherData, locationName) => {
-  setWeather(weatherData);
-  setLocation(locationName);
-};
+    } catch (error) {
 
-const weatherAdvice = getWeatherAdvice(weather);
+      console.error(
+        "Report generation error:",
+        error
+      );
 
-console.log(weatherAdvice);
+      alert(
+        "Unable to generate the AI report."
+      );
+    }
+  };
+
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
-<>
-  <Navbar /> 
+    <>
+      <Navbar />
 
+      <div className="container">
 
+        {/* HERO */}
+        <Hero />
 
-    <div className="container">
+        {/* WEATHER */}
+        <WeatherCard
+          onWeatherUpdate={
+            handleWeatherUpdate
+          }
+        />
 
-      <Hero />
+        {/* ==========================================
+            UPLOAD SECTION
+        ========================================== */}
 
-      <WeatherCard onWeatherUpdate={handleWeatherUpdate} />
-           {/* Upload Card */}
+        <div className="upload-card">
 
-      {/* File Upload */}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
 
-      <div className="upload-card">
+              const file =
+                e.target.files[0];
 
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-      const file = e.target.files[0];
-      setSelectedFile(file);
+              setSelectedFile(file);
 
-      if (file) {
-        setPreview(URL.createObjectURL(file));
-      }
-    }}
-  />
+              if (file) {
 
-  {preview && (
-    <div className="preview">
-      <img src={preview} alt="Leaf Preview" />
-    </div>
-  )}
+                setPreview(
+                  URL.createObjectURL(file)
+                );
 
-  <button
-    className="predict-btn"
-    onClick={handlePredict}
-  >
-    🔍 Analyze Crop
-  </button>
+                // Clear old prediction
+                setDisease("");
+                setConfidence("");
+                setTop3([]);
+              }
 
-</div>
+            }}
+          />
 
-      <br /><br />
+          {/* ==========================================
+              IMAGE PREVIEW
+          ========================================== */}
 
-      {loading && <h3>Predicting...</h3>}
+          {preview && (
+            <div className="preview-container">
 
-      {disease && (
-  <div className="result">
-    <h2>🌿 Prediction Result</h2>
+              <h3>Leaf Preview</h3>
 
-    <h3>Disease</h3>
-    <p>{disease}</p>
+              <img
+                src={preview}
+                alt="Leaf Preview"
+                className="leaf-preview"
+              />
 
-   <h3>Confidence</h3>
+            </div>
+          )}
 
-<ConfidenceMeter confidence={Number(confidence)} />
+          {/* ==========================================
+              ANALYZE BUTTON
+          ========================================== */}
 
-<p className="badge">
-  {confidence >= 90
-    ? "🟢 Very High Confidence"
-    : confidence >= 75
-    ? "🟡 High Confidence"
-    : "🔴 Low Confidence"}
-</p>
+          <button
+            className="predict-btn"
+            onClick={handlePredict}
+            disabled={loading}
+          >
+            {loading
+              ? "🔄 Analyzing..."
+              : "🔍 Analyze Crop"}
+          </button>
 
-{top3.length > 0 && (
-  <>
-    <h3>🏆 Top 3 Predictions</h3>
-
-    <div className="top3-card">
-      {top3.map((item, index) => (
-        <div key={index} className="top3-item">
-          <strong>{index + 1}. {item.disease}</strong>
           <br />
-          Confidence: {item.confidence}%
+          <br />
+
+          {/* ==========================================
+              LOADING
+          ========================================== */}
+
+          {loading && (
+            <h3>
+              🤖 AI is analyzing your crop...
+            </h3>
+          )}
+
+          {/* ==========================================
+              PREDICTION RESULT
+          ========================================== */}
+
+          {disease && !loading && (
+
+            <div className="prediction-result">
+
+              <h2>
+                🌿 Prediction Result
+              </h2>
+
+              {/* ====================================
+                  DISEASE
+              ==================================== */}
+
+              <h3>Disease</h3>
+
+              <p>
+                {disease}
+              </p>
+
+              {/* ====================================
+                  CONFIDENCE
+              ==================================== */}
+
+              <h3>Confidence</h3>
+
+            
+
+              <ConfidenceMeter
+                confidence={confidence}
+              />
+
+              {/* ====================================
+                  TOP 3 PREDICTIONS
+              ==================================== */}
+
+              {top3.length > 0 && (
+                <>
+                  <h3>
+                    🏆 Top 3 Predictions
+                  </h3>
+
+                  <div className="top3-card">
+
+                    {top3.map(
+                      (item, index) => (
+
+                        <div
+                          key={index}
+                          className="top3-item"
+                        >
+
+                          <strong>
+                            {index + 1}.{" "}
+                            {item.disease}
+                          </strong>
+
+                          <br />
+
+                          Confidence:{" "}
+                          {item.confidence}%
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+                </>
+              )}
+
+              {/* ====================================
+                  DESCRIPTION + TREATMENT
+              ==================================== */}
+
+              {info ? (
+
+                <>
+
+                  <h3>
+                    📋 Description
+                  </h3>
+
+                  <p>
+                    {info.description}
+                  </p>
+
+                  <h3>
+                    💊 Recommended Treatment
+                  </h3>
+
+                  {info.treatment &&
+                  info.treatment.length > 0 ? (
+
+                    <ul className="treatment-list">
+
+                      {info.treatment.map(
+                        (item, index) => (
+
+                          <li key={index}>
+                            ✅ {item}
+                          </li>
+
+                        )
+                      )}
+
+                    </ul>
+
+                  ) : (
+
+                    <p>
+                      Treatment information
+                      is not available.
+                    </p>
+
+                  )}
+
+                </>
+
+              ) : (
+
+                <div className="warning-box">
+
+                  ⚠️ Disease information
+                  is not available for:
+
+                  <strong>
+                    {" "}{disease}
+                  </strong>
+
+                </div>
+
+              )}
+
+              {/* ====================================
+                  AI FARMING ADVISORY
+              ==================================== */}
+
+              {advisory ? (
+
+                <>
+
+                  <h3>
+                    🌾 AI Farming Advisory
+                  </h3>
+
+                  {advisory.advice &&
+                  advisory.advice.length > 0 ? (
+
+                    <ul className="treatment-list">
+
+                      {advisory.advice.map(
+                        (item, index) => (
+
+                          <li key={index}>
+                            🌱 {item}
+                          </li>
+
+                        )
+                      )}
+
+                    </ul>
+
+                  ) : (
+
+                    <p>
+                      Farming advisory
+                      is not available.
+                    </p>
+
+                  )}
+
+                </>
+
+              ) : (
+
+                <div className="warning-box">
+
+                  ⚠️ Farming advisory
+                  is not available for:
+
+                  <strong>
+                    {" "}{disease}
+                  </strong>
+
+                </div>
+
+              )}
+
+              {/* ====================================
+                  WEATHER BASED ADVISORY
+              ==================================== */}
+
+              {weatherAdvice &&
+              weatherAdvice.length > 0 && (
+
+                <>
+
+                  <h3>
+                    🌦 Weather Based AI Recommendation
+                  </h3>
+
+                  <ul className="treatment-list">
+
+                    {weatherAdvice.map(
+                      (item, index) => (
+
+                        <li key={index}>
+                          🌤 {item}
+                        </li>
+
+                      )
+                    )}
+
+                  </ul>
+
+                </>
+
+              )}
+
+              {/* ====================================
+                  DOWNLOAD REPORT
+              ==================================== */}
+
+              <button
+                className="download-btn"
+                onClick={
+                  handleDownloadReport
+                }
+              >
+                📄 Download AI Report
+              </button>
+
+            </div>
+          )}
+
         </div>
-      ))}
-    </div>
-  </>
-)}
 
+        {/* ==========================================
+            CHATBOT
+        ========================================== */}
 
-    {info && (
-      <>
-        <h3>Description</h3>
-        <p>{info.description}</p>
+        <ChatBot
+          disease={disease}
+          weather={weather}
+          location={location}
+          advisory={advisory}
+          weatherAdvice={weatherAdvice}
+        />
 
-        <h3>Recommended Treatment</h3>
+        {/* ==========================================
+            HISTORY
+        ========================================== */}
 
-        <ul className="treatment-list">
-          {info.treatment.map((item, index) => (
-            <li key={index}>✅ {item}</li>
-          ))}
-        </ul>
+        <History
+          refresh={refreshHistory}
+        />
 
-{/* AI Farming Advisory */}
-{advisory && (
-  <>
-    <h3>🌾 AI Farming Advisory</h3>
-
-    <ul className="treatment-list">
-      {advisory.advice.map((item, index) => (
-        <li key={index}>🌱 {item}</li>
-      ))}
-    </ul>
-  </>
-)}
-
-</>
-)}
-
-{weatherAdvice.length > 0 && (
-  <>
-    <h3>🌦 Weather Based AI Recommendation</h3>
-
-    <ul className="treatment-list">
-      {weatherAdvice.map((item, index) => (
-        <li key={index}>{item}</li>
-      ))}
-    </ul>
-  </>
-)}
-
-<button
-  className="download-btn"
-  onClick={handleDownloadReport}
->
-  📄 Download AI Report
-</button>
-    
-  </div>
-)}
-
-    </div>
-
-<ChatBot
-  disease={disease}
-  weather={weather}
-  advisory={advisory}
-/>
-<History refresh={refreshHistory} />
+      </div>
     </>
   );
 }
